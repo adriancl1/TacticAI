@@ -321,12 +321,16 @@ bool Unit::AttackUnit()
 
 	if (attackingEnemy != nullptr && attackingEnemy->GetHP() > 0) {
 
+		state = ATTACKING;
 		iPoint entityPos = App->map->WorldToMap(attackingEnemy->GetX(), attackingEnemy->GetY());
 		iPoint Pos = App->map->WorldToMap(GetX(), GetY());
 
 		if (Pos.x == entityPos.x - range && Pos.y == entityPos.y)//attackingEnemy is south
 		{
-			attackingEnemy->SetHp(attackingEnemy->GetHP() - attack);
+			if (attackingTimer.ReadSec() > 1) {
+				attackingEnemy->SetHp(attackingEnemy->GetHP() - attack);
+				attackingTimer.Start();
+			}
 			this->direction = SOUTH;
 			this->action_type = ATTACK;
 			ret = true;
@@ -334,7 +338,10 @@ bool Unit::AttackUnit()
 
 		else if (Pos.x == entityPos.x && Pos.y == entityPos.y - range)//attackingEnemy is west
 		{
-			attackingEnemy->SetHp(attackingEnemy->GetHP() - attack);
+			if (attackingTimer.ReadSec() > 1) {
+				attackingEnemy->SetHp(attackingEnemy->GetHP() - attack);
+				attackingTimer.Start();
+			}
 			this->direction = WEST;
 			this->action_type = ATTACK;
 			ret = true;
@@ -342,7 +349,10 @@ bool Unit::AttackUnit()
 
 		else if (Pos.x == entityPos.x + range && Pos.y == entityPos.y)//attackingEnemy is north
 		{
-			attackingEnemy->SetHp(attackingEnemy->GetHP() - attack);
+			if (attackingTimer.ReadSec() > 1) {
+				attackingEnemy->SetHp(attackingEnemy->GetHP() - attack);
+				attackingTimer.Start();
+			}
 			this->direction = NORTH;
 			this->action_type = ATTACK;
 			ret = true;
@@ -350,7 +360,10 @@ bool Unit::AttackUnit()
 
 		else if (Pos.x == entityPos.x && Pos.y == entityPos.y + range)//attackingEnemy is east
 		{
-			attackingEnemy->SetHp(attackingEnemy->GetHP() - attack);
+			if (attackingTimer.ReadSec() > 1) {
+				attackingEnemy->SetHp(attackingEnemy->GetHP() - attack);
+				attackingTimer.Start();
+			}
 			this->direction = EAST;
 			this->action_type = ATTACK;
 			ret = true;
@@ -428,6 +441,7 @@ bool Unit::CheckSurroundings()
 					{
 						attackingEnemy = unit2;
 						AttackUnit();
+						attackingTimer.Start();
 						return true;
 					}
 				}
