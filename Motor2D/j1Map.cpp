@@ -82,8 +82,8 @@ void j1Map::Draw()
 
 		if (layer->properties.Get("Nodraw") == true && (layer->properties.Get("Navigation") == true))
 		{
-			//item++; //TODO:Uncomment for no printing
-			//continue;
+			item++; //TODO:Uncomment for no printing
+			continue;
 		}
 		for (int y = 0; y < data.height; ++y)
 		{

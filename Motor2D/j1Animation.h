@@ -41,7 +41,7 @@ private:
 	float current_frame;
 	bool loop = true;
 	int loops = 0;
-	float speed = 100.0f;	//More speed equals slow down the animation
+	float speed = 10.0f;	//More speed equals slow down the animation
 	j1Timer	anim_timer;
 
 public:
@@ -81,7 +81,7 @@ public:
 	Animation* DrawAnimation(const UNIT_TYPE unit, const ACTION_TYPE action, DIRECTION direction, iPoint pos);
 	bool GetAnimationFrame(SDL_Rect& frame, iPoint& pivot, const Unit* unit);
 	SDL_Texture* GetTexture(const UNIT_TYPE unit);
-	Animation* GetAnimation(const UNIT_TYPE unit, const ACTION_TYPE action, const DIRECTION direction);
+	Animation* GetAnimation(const UNIT_TYPE unit, const ACTION_TYPE action, DIRECTION direction);
 
 private:
 	std::vector<Textures> textures;

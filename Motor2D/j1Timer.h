@@ -14,7 +14,7 @@ public:
 	uint32 Read() const;
 	float ReadSec() const;
 	void Stop();
-	void IsStopped();
+	bool IsStopped();
 
 private:
 	uint32	started_at;

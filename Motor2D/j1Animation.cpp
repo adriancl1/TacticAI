@@ -108,8 +108,25 @@ bool j1Animation::CleanUp()
 	return true;
 }
 
-Animation* j1Animation::GetAnimation(const UNIT_TYPE unit, const ACTION_TYPE action, const DIRECTION direction)
+Animation* j1Animation::GetAnimation(const UNIT_TYPE unit, const ACTION_TYPE action, DIRECTION direction)
 {
+	switch (direction)
+	{
+	case NORTH_EAST:
+		direction = NORTH_WEST;
+		break;
+
+	case EAST:
+		direction = WEST;
+		break;
+
+	case SOUTH_EAST:
+		direction = SOUTH_WEST;
+		break;
+
+	default:
+		break;
+	}
 	std::list<Animation*>::iterator ret = animations.begin();
 	while (ret != animations.end())
 	{

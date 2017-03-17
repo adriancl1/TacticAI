@@ -47,7 +47,7 @@ bool j1Scene::Start()
 	debug_tex = App->tex->Load("maps/path2.png");
 
 	App->entity_manager->CreateUnit(TWOHANDEDSWORDMAN, fPoint(30, 170));
-	App->entity_manager->CreateUnit(TWOHANDEDSWORDMAN, fPoint(250, 400));
+	//App->entity_manager->CreateUnit(TWOHANDEDSWORDMANENEMY, fPoint(250, 400));
 	App->entity_manager->CreateUnit(TWOHANDEDSWORDMAN, fPoint(300, 360));
 	App->entity_manager->CreateUnit(TWOHANDEDSWORDMAN, fPoint(400, 350));
 	App->entity_manager->CreateUnit(TWOHANDEDSWORDMAN, fPoint(450, 415));
@@ -61,7 +61,8 @@ bool j1Scene::Start()
 	App->entity_manager->CreateUnit(TWOHANDEDSWORDMAN, fPoint(490, 330));
 	App->entity_manager->CreateUnit(TWOHANDEDSWORDMAN, fPoint(520, 360));
 	App->entity_manager->CreateUnit(CAVALRYARCHER, fPoint(90, 170));
-	App->entity_manager->CreateUnit(TWOHANDEDSWORDMANENEMY, fPoint(60, 190));
+
+	//App->entity_manager->CreateUnit(TWOHANDEDSWORDMANENEMY, fPoint(60, 190));
 
 	return true;
 }
@@ -95,30 +96,9 @@ bool j1Scene::Update(float dt)
 
 	App->map->Draw();
 	
-	// Debug pathfinding ------------------------------
-	int x, y;
-	App->input->GetMousePosition(x, y);
-	iPoint p = App->render->ScreenToWorld(x, y);
-	p = App->map->WorldToMap(p.x, p.y);
-	p = App->map->MapToWorld(p.x, p.y);
-
-	App->render->Blit(debug_tex, p.x - 32, p.y - 32);
-
-	const std::vector<iPoint>* path = App->pathfinding->GetLastPath();
-	
-	if (path->size() != 0)
-	{
-		std::vector<iPoint>::const_iterator item = path->begin();
-
-		while(item != path->end())
-		{
-			iPoint pos = App->map->MapToWorld(item->x, item->y);
-			App->render->Blit(debug_tex, pos.x - 32, pos.y - 32);
-			item++;
-		}
-	}
-
 	//SELECTION
+
+	int x, y;
 	App->input->GetMousePosition(x, y);
 
 	if (App->input->GetMouseButtonDown(1) == KEY_DOWN)

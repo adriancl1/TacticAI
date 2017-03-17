@@ -29,6 +29,7 @@ public:
 	~Entity();
 
 	virtual void Update() = 0;
+	virtual void PostUpdate() = 0;
 	virtual void AI() = 0;
 	virtual void Draw() = 0;
 

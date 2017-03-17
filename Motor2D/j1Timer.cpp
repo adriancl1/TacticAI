@@ -35,3 +35,8 @@ void j1Timer::Stop()
 {
 	stopped = true;
 }
+
+bool j1Timer::IsStopped()
+{
+	return stopped;
+}

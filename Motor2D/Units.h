@@ -84,6 +84,9 @@ private:
 	bool IA;
 	Unit* attackingEnemy = nullptr;
 	j1Timer attackingTimer;
+	j1Timer logicTimer;
+	std::list<iPoint> frontier;
+	std::list<iPoint> visited;
 	
 
 public:
@@ -100,6 +103,7 @@ public:
 	STATE state;
 
 	void Update(); // defines order
+	void PostUpdate();
 
 	virtual void Move();
 	virtual void AI();
@@ -114,10 +118,10 @@ public:
 	void AddPath(iPoint new_goal);
 
 	//TACTIC
-	//bool CheckSurroundings();
 	bool AttackUnit();
 	bool Hit(int amount);
 	bool CheckSurroundings();
+	bool debug = false;
 };
 
 #endif

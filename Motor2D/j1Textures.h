@@ -35,6 +35,7 @@ public:
 public:
 
 	std::list<SDL_Texture*>	textures;
+	SDL_Texture* debugTex = nullptr; 
 };
 
 

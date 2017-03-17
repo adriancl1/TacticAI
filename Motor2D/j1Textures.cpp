@@ -40,6 +40,7 @@ bool j1Textures::Start()
 {
 	LOG("start textures");
 	bool ret = true;
+	debugTex = App->tex->Load("maps/meta2.png");
 	return ret;
 }
 

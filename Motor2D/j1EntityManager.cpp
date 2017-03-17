@@ -11,7 +11,10 @@ j1EntityManager::j1EntityManager() : j1Module()
 j1EntityManager::~j1EntityManager() {}
 
 
-bool j1EntityManager::Awake() { return true; }
+bool j1EntityManager::Awake() 
+{ 
+	return true; 
+}
 
 bool j1EntityManager::CleanUp() 
 {
@@ -127,6 +130,10 @@ bool j1EntityManager::PostUpdate()
 		{
 			DeleteEntity(it._Ptr->_Myval);
 			entity_list.erase(it);
+		}
+		else
+		{
+			(*it)->PostUpdate();
 		}
 	}
 	return true;

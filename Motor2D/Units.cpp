@@ -11,6 +11,7 @@
 
 Unit::Unit(UNIT_TYPE u_type, fPoint pos, int id): Entity(UNIT, pos), unit_type(u_type), direction(WEST), action_type(IDLE), id(id)
 {
+
 	switch (u_type)
 	{
 		//ADD UNIT: IF ANY UNIT IS ADDED ADD CODE HERE:
@@ -22,7 +23,7 @@ Unit::Unit(UNIT_TYPE u_type, fPoint pos, int id): Entity(UNIT, pos), unit_type(u
 		rate_of_fire = 2;
 		range = 1;
 		unit_class = INFANTRY;
-		unit_radius = 6;
+		unit_radius = 4;
 		IA = false;
 		state = NONE;
 		break;
@@ -71,15 +72,21 @@ Unit::Unit(UNIT_TYPE u_type, fPoint pos, int id): Entity(UNIT, pos), unit_type(u
 		unit_class = NO_CLASS;
 		break;
 	}
+
+	//logicTimer.Start();
 }
 
 void Unit::Update()
 {
+	if (state != MOVING && state != ATTACKING) {
+		CheckSurroundings();
+	}
 	if (App->input->GetMouseButtonDown(3) == KEY_DOWN && this->GetEntityStatus() == E_SELECTED)
 	{
 		this->path_list.clear();
 		App->input->GetMousePosition(destination.x, destination.y);
-
+		destination.x -= App->render->camera.x;
+		destination.y -= App->render->camera.y;
 		if (this->GetPath({ destination.x, destination.y }) != -1)
 		{
 			path_list.pop_front();
@@ -131,6 +138,7 @@ void Unit::Update()
 	if(state == MOVING) 
 	{
 		Move();
+		CheckSurroundings();
 	}
 
 	if (state == ATTACKING)
@@ -143,8 +151,17 @@ void Unit::Update()
 
 		}
 	}
-	Draw();
 
+	if (App->input->GetKey(SDL_SCANCODE_F1) == KEY_DOWN && this->GetEntityStatus() == E_SELECTED)
+	{
+		debug = !debug;
+	}
+
+	Draw();
+}
+
+void Unit::PostUpdate()
+{
 	if (GetHP() <= 0) {
 		state = DEAD;
 		this->action_type = DIE;
@@ -411,57 +428,107 @@ bool Unit::AttackUnit()
 
 bool Unit::CheckSurroundings()
 {
-	std::list<iPoint> frontier;
-	std::list<iPoint> visited;
 
-	frontier.push_back(App->map->WorldToMap(GetX(), GetY()));
-	iPoint current;
-	for (int j = 0; j <= unit_radius; j++) {
-		int frontierNum = frontier.size();
-		for (int i = 0; i < frontierNum;) {
-			current = *frontier.begin();
-			frontier.pop_front();
+	if (logicTimer.ReadSec() > 1) {
+		frontier.clear();
+		visited.clear();
+		logicTimer.Start();
+		frontier.push_back(App->map->WorldToMap(GetX(), GetY()));
+		visited.push_back(App->map->WorldToMap(GetX(), GetY()));
+		iPoint current;
+		for (int j = 0; j < unit_radius; j++) {
+			int frontierNum = frontier.size();
+			for (int i = 0; i < frontierNum;) {
+				current = *frontier.begin();
+				frontier.pop_front();
 
-			iPoint neighbors[4];
-			neighbors[0].x = current.x + 1;
-			neighbors[0].y = current.y;
-			neighbors[1].x = current.x - 1;
-			neighbors[1].y = current.y;
-			neighbors[2].x = current.x;
-			neighbors[2].y = current.y - 1;
-			neighbors[3].x = current.x;
-			neighbors[3].y = current.y + 1;
+				iPoint neighbors[4];
+				neighbors[0].x = current.x + 1;
+				neighbors[0].y = current.y;
+				neighbors[1].x = current.x - 1;
+				neighbors[1].y = current.y;
+				neighbors[2].x = current.x;
+				neighbors[2].y = current.y - 1;
+				neighbors[3].x = current.x;
+				neighbors[3].y = current.y + 1;
 
-			for (int n = 0; n <= 3; n++)
-			{
-				if (App->entity_manager->IsUnitInTile(this, neighbors[n]))
+				for (int n = 0; n <= 3; n++)
 				{
-					Unit* unit2 = App->entity_manager->GetUnitInTile(neighbors[n]);
-					if (unit2->IA != this->IA)
+					if (App->entity_manager->IsUnitInTile(this, neighbors[n]))
 					{
-						attackingEnemy = unit2;
-						AttackUnit();
-						attackingTimer.Start();
-						return true;
+						Unit* unit2 = App->entity_manager->GetUnitInTile(neighbors[n]);
+						if (unit2->IA != this->IA)
+						{
+							attackingEnemy = unit2;
+							AttackUnit();
+							attackingTimer.Start();
+							return true;
+						}
 					}
 				}
-			}
 
-			bool alreadyVisited = false;
-			for (std::list<iPoint>::iterator tmp = visited.begin(); tmp != visited.end(); tmp++) {
+				bool alreadyVisited = false;
 				for (int i = 0; i <= 3; i++) {
-					if ((*tmp).x == neighbors[i].x && (*tmp).y != neighbors[i].y) 
+					if (frontierNum == 1)
 					{
-						alreadyVisited = true;
+						frontier.push_back(iPoint(neighbors[i]));
+						visited.push_back(iPoint(neighbors[i]));
+					}
+					else {
+						std::list<iPoint>::iterator tmp = visited.begin();
+						int visitedNum = visited.size();
+						alreadyVisited = false;
+						for (int p = 0; p < visitedNum; tmp++, p++) {
+							if ((*tmp).x == neighbors[i].x && (*tmp).y == neighbors[i].y)
+							{
+								alreadyVisited = true;
+							}
+						}
+						if (alreadyVisited == false)
+						{
+							frontier.push_back(iPoint(neighbors[i]));
+							visited.push_back(iPoint(neighbors[i]));
+						}
 					}
 				}
+				i++;
 			}
-			if (alreadyVisited == false)
-			{
-				frontier.push_back(iPoint(neighbors[i]));
-				visited.push_back(iPoint(neighbors[i]));
-			}
-			i++;
+		}
+		int a = logicTimer.ReadSec();
+		a = a;
+	}
+
+	if (debug)
+	{
+		iPoint point;
+		std::list<iPoint>::iterator item = visited.begin();
+
+		while (item != visited.end())
+		{
+			point = (*item);
+			TileSet* tileset = App->map->GetTilesetFromTileId(25);
+
+			SDL_Rect r = tileset->GetTileRect(25);
+			iPoint pos = App->map->MapToWorld(point.x, point.y);
+
+			App->render->Blit(App->tex->debugTex, pos.x - 32, pos.y - 32, &r);
+
+			item++;
+		}
+
+		// Draw frontier
+		for (std::list<iPoint>::iterator item2 = frontier.begin(); item2 != frontier.end(); item2++)
+		{
+			point = (*item2);
+			TileSet* tileset = App->map->GetTilesetFromTileId(26);
+
+			SDL_Rect r = tileset->GetTileRect(26);
+			iPoint pos = App->map->MapToWorld(point.x, point.y);
+
+			App->render->Blit(App->tex->debugTex, pos.x - 32, pos.y - 32, &r);
 		}
 	}
+
+
+	return true;
 }
