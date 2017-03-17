@@ -147,36 +147,5 @@ void j1Collision::SplitUnits(Unit * unit1, Unit * unit2)
 	unit1->GetNextTile();
 	unit1->SetAction(WALK);
 	unit1->state = MOVING;
-	
-
-	/*fPoint vector = {unit1->GetX() - unit2->GetX(), unit1->GetY() - unit2->GetY()};
-	if (vector.x < 0)
-		vector.x *= -1;
-	if (vector.y < 0)
-		vector.y *= -1;
-
-	float module = (sqrt(vector.x*vector.x + vector.y * vector.y));
-	//float angle = 0;
-
-	vector.x += unit1->unit_radius + unit2->unit_radius + 1;
-	vector.y += unit1->unit_radius + unit2->unit_radius + 1;
-	if (module == 0)
-		vector.x = unit1->unit_radius + unit2->unit_radius + 1;
-
-	fPoint pos;
-	pos.x = vector.x + unit1->GetX();
-	pos.y = vector.y + unit1->GetY();
-	iPoint tile = App->map->WorldToMap(pos.x, pos.y);
-		
-	while (App->pathfinding->IsWalkable({ tile.x, tile.y }) == false)
-	{
-		pos.x = unit1->GetX() + vector.x;
-		pos.y = unit1->GetY() + vector.y;
-		tile = App->map->WorldToMap(pos.x, pos.y);
-	}
-	
-	unit2->AddPath(tile);
-	unit2->GetNextTile();
-	unit2->moving = true;
-	unit2->SetAction(WALK);*/
 }
+

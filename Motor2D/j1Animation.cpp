@@ -75,9 +75,9 @@ bool j1Animation::Awake(pugi::xml_node& config)
 				new_anim->SetDirection(direction_node);
 
 				std::string action = action_node.name();
-				if (!action.compare("disappear"))
+				if (!action.compare("disappear") || !action.compare("die"))
 				{
-					new_anim->speed = 1000.0f;
+					new_anim->speed = 100.0f;
 					new_anim->loop = false;
 				}
 				animations.push_back(new_anim);
@@ -161,8 +161,6 @@ Animation* j1Animation::DrawAnimation(const UNIT_TYPE unit, const ACTION_TYPE ac
 	}
 	
 	Animation* anim = App->anim->GetAnimation(unit, action, direction);
-	if (anim->Finished() == false)
-	{
 		SDL_Texture* tex = App->anim->GetTexture(unit);
 		SDL_Rect rect = anim->GetCurrentFrame();
 		iPoint* p = &anim->GetCurrentPivotPoint();
@@ -190,7 +188,6 @@ Animation* j1Animation::DrawAnimation(const UNIT_TYPE unit, const ACTION_TYPE ac
 		else
 			App->render->Blit(tex, pos.x - p->x, pos.y - p->y, &rect);
 
-	}
 	return anim;
 }
 
@@ -257,7 +254,7 @@ void Animation::SetLoopState(bool state)
 SDL_Rect& Animation::GetCurrentFrame()
 {
 	if (current_frame == -1)
-		return SDL_Rect{ 0,0,0,0 };
+		return frames[(int)frames.size() - 1];
 	
 	current_frame = (float) floor(anim_timer.Read() / speed);
 
@@ -272,8 +269,8 @@ SDL_Rect& Animation::GetCurrentFrame()
 		else
 		{
 			current_frame = -1;
-			loops = 0;
-			return SDL_Rect{ 0,0,0,0 };
+			loops = 1;
+			return frames[(int)frames.size() - 1];
 		}
 	}
 

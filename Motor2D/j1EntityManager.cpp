@@ -79,6 +79,8 @@ void j1EntityManager::DeleteEntity(Entity * ptr)
 
 void j1EntityManager::DeleteUnit(Entity * ptr)
 {
+	entity_list.remove(ptr);
+	delete ptr;
 }
 
 //TODO: Delete this

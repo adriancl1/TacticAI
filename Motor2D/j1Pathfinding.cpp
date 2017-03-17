@@ -282,3 +282,4 @@ bool PathNode::operator!=(const PathNode & node) const
 {
 	return !operator==(node);
 }
+

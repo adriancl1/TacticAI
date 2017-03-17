@@ -90,6 +90,7 @@ void Unit::Update()
 		else
 		{
 			state = NONE;
+			this->action_type = IDLE;
 		}
 	}
 	else if (App->input->GetKey(SDL_SCANCODE_A) == KEY_DOWN && this->GetEntityStatus() == E_SELECTED)
@@ -98,9 +99,27 @@ void Unit::Update()
 		destination.x -= App->render->camera.x;
 		destination.y -= App->render->camera.y;
 		destination = App->map->WorldToMap(destination.x, destination.y);
-		if (App->entity_manager->IsUnitInTile(this, destination)) {
-			enemy = App->entity_manager->GetUnitInTile(destination);
+		if (App->entity_manager->IsUnitInTile(this, destination)) 
+		{
+			attackingEnemy = App->entity_manager->GetUnitInTile(destination);
 			state = ATTACKING;
+		}
+
+		else
+		{
+			destination = App->map->MapToWorld(destination.x, destination.y);
+			if (this->GetPath({ destination.x, destination.y }) != -1)
+			{
+				path_list.pop_front();
+				GetNextTile();
+				this->action_type = WALK;
+				state = MOVING;
+			}
+			else
+			{
+				state = NONE;
+				this->action_type = IDLE;
+			}
 		}
 	}
 
@@ -116,13 +135,23 @@ void Unit::Update()
 
 	if (state == ATTACKING)
 	{
-		AttackUnit(enemy);
+		if (attackingEnemy != nullptr) {
+			AttackUnit();
+		}
+		else
+		{
+
+		}
 	}
 	Draw();
 
 	if (GetHP() <= 0) {
 		state = DEAD;
 		this->action_type = DIE;
+		if ((App->anim->GetAnimation(unit_type, action_type, direction))->Finished() == true)
+		{
+			App->entity_manager->DeleteUnit(this);
+		}
 		//delete this;
 		//App->entity_manager->DeleteUnit(this);
 	}
@@ -145,38 +174,6 @@ void Unit::Move()
 				this->action_type = IDLE;
 			}
 		}
-
-		/*if (App->input->GetKey(SDL_SCANCODE_A) == KEY_DOWN && this->GetEntityStatus() == E_SELECTED)
-		{
-		//if(App->entity_manager->GetUnitInTile())
-		this->path_list.clear();
-		App->input->GetMousePosition(destination.x, destination.y);
-		destination.x -= App->render->camera.x;
-		destination.y -= App->render->camera.y;
-		if (this->GetPath({ destination.x, destination.y }) != -1)
-		{
-		attacking = true;
-		path_list.pop_front();
-		GetNextTile();
-		this->action_type = WALK;
-		this->moving = true;
-		}
-		else
-		{
-		CheckSurroundings();
-		attacking = true;
-		this->moving = false;
-		this->action_type = ATTACK;
-		}
-		}
-
-		App->render->DrawLine(0, 0, 1000, 0, 255, 255, 255);
-		App->render->DrawLine(0, 0, 0, 1000, 255, 255, 255);
-
-		/*if (attacking == true)
-		{
-		CheckSurroundings();
-		}*/
 }
 
 void Unit::AI()
@@ -318,96 +315,58 @@ bool Unit::GetNextTile()
 	return ret;
 }
 
-bool Unit::CheckSurroundings()
-{
-	iPoint tile;
-	iPoint ori = App->map->WorldToMap(GetX(), GetY());
-	tile.x = ori.x - unit_radius;
-	tile.y = ori.y - unit_radius;
-	for (tile.x; tile.x < ori.x + 12; tile.x++) {
-		for (tile.y = ori.y - unit_radius; tile.y < ori.y + 12; tile.y++) {
-			if (App->entity_manager->IsUnitInTile(this, tile) )
-			{
-				if (tile.x == ori.x + 1 == false) {
-					iPoint destination = App->map->MapToWorld(tile.x - 1, tile.y );
-					if (this->GetPath({ destination.x, destination.y }) != -1)
-					{
-						path_list.pop_front();
-						GetNextTile();
-						this->action_type = WALK;
-						state = MOVING;
-					}
-				}
-				else
-				{
-					state = NONE;
-					GetNextTile();
-					this->SetPosition(path_objective.x, path_objective.y);
-					this->action_type = ATTACK;
-					this->direction = SOUTH;
-					//state = ATTACKING;
-				}
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
-bool Unit::AttackUnit(Unit* victim)
+bool Unit::AttackUnit()
 {
 	bool ret = false;
 
-	if (victim->GetHP() > 0) {
+	if (attackingEnemy != nullptr && attackingEnemy->GetHP() > 0) {
 
-		iPoint entityPos = App->map->WorldToMap(victim->GetX(), victim->GetY());
+		iPoint entityPos = App->map->WorldToMap(attackingEnemy->GetX(), attackingEnemy->GetY());
 		iPoint Pos = App->map->WorldToMap(GetX(), GetY());
 
-		if (Pos.x == entityPos.x - 1 && Pos.y == entityPos.y)//Enemy is south
+		if (Pos.x == entityPos.x - range && Pos.y == entityPos.y)//attackingEnemy is south
 		{
-			victim->SetHp(victim->GetHP() - attack);
+			attackingEnemy->SetHp(attackingEnemy->GetHP() - attack);
 			this->direction = SOUTH;
 			this->action_type = ATTACK;
 			ret = true;
 		}
 
-		else if (Pos.x == entityPos.x && Pos.y == entityPos.y - 1)//Enemy is west
+		else if (Pos.x == entityPos.x && Pos.y == entityPos.y - range)//attackingEnemy is west
 		{
-			victim->SetHp(victim->GetHP() - attack);
+			attackingEnemy->SetHp(attackingEnemy->GetHP() - attack);
 			this->direction = WEST;
 			this->action_type = ATTACK;
 			ret = true;
 		}
 
-		else if (Pos.x == entityPos.x + 1 && Pos.y == entityPos.y)//Enemy is north
+		else if (Pos.x == entityPos.x + range && Pos.y == entityPos.y)//attackingEnemy is north
 		{
-			victim->SetHp(victim->GetHP() - attack);
+			attackingEnemy->SetHp(attackingEnemy->GetHP() - attack);
 			this->direction = NORTH;
 			this->action_type = ATTACK;
 			ret = true;
 		}
 
-		else if (Pos.x == entityPos.x && Pos.y == entityPos.y + 1)//Enemy is east
+		else if (Pos.x == entityPos.x && Pos.y == entityPos.y + range)//attackingEnemy is east
 		{
-			victim->SetHp(victim->GetHP() - attack);
+			attackingEnemy->SetHp(attackingEnemy->GetHP() - attack);
 			this->direction = EAST;
 			this->action_type = ATTACK;
 			ret = true;
 		}
-
 		else {
 			this->path_list.clear();
 			iPoint enemy;
-			enemy.x = victim->GetX();
-			enemy.y = victim->GetY();
+			enemy.x = attackingEnemy->GetX();
+			enemy.y = attackingEnemy->GetY();
 			if (this->GetPath(enemy) != -1)
 			{
 				path_list.pop_front();
 				GetNextTile();
 				this->action_type = WALK;
 				state = MOVING;
-				ret = true;
+				ret = false;
 			}
 			else
 			{
@@ -416,8 +375,79 @@ bool Unit::AttackUnit(Unit* victim)
 		}
 	}
 	else {
-		return false;
+		this->path_list.clear();
+		iPoint enemy;
+		enemy.x = attackingEnemy->GetX();
+		enemy.y = attackingEnemy->GetY();
+		if (this->GetPath(enemy) != -1)
+		{
+			path_list.pop_front();
+			GetNextTile();
+			this->action_type = WALK;
+			state = MOVING;
+			ret = false;
+		}
+		else
+		{
+			state = NONE;
+		}
 	}
 	
 	return ret;
+}
+
+bool Unit::CheckSurroundings()
+{
+	std::list<iPoint> frontier;
+	std::list<iPoint> visited;
+
+	frontier.push_back(App->map->WorldToMap(GetX(), GetY()));
+	iPoint current;
+	for (int j = 0; j <= unit_radius; j++) {
+		int frontierNum = frontier.size();
+		for (int i = 0; i < frontierNum;) {
+			current = *frontier.begin();
+			frontier.pop_front();
+
+			iPoint neighbors[4];
+			neighbors[0].x = current.x + 1;
+			neighbors[0].y = current.y;
+			neighbors[1].x = current.x - 1;
+			neighbors[1].y = current.y;
+			neighbors[2].x = current.x;
+			neighbors[2].y = current.y - 1;
+			neighbors[3].x = current.x;
+			neighbors[3].y = current.y + 1;
+
+			for (int n = 0; n <= 3; n++)
+			{
+				if (App->entity_manager->IsUnitInTile(this, neighbors[n]))
+				{
+					Unit* unit2 = App->entity_manager->GetUnitInTile(neighbors[n]);
+					if (unit2->IA != this->IA)
+					{
+						attackingEnemy = unit2;
+						AttackUnit();
+						return true;
+					}
+				}
+			}
+
+			bool alreadyVisited = false;
+			for (std::list<iPoint>::iterator tmp = visited.begin(); tmp != visited.end(); tmp++) {
+				for (int i = 0; i <= 3; i++) {
+					if ((*tmp).x == neighbors[i].x && (*tmp).y != neighbors[i].y) 
+					{
+						alreadyVisited = true;
+					}
+				}
+			}
+			if (alreadyVisited == false)
+			{
+				frontier.push_back(iPoint(neighbors[i]));
+				visited.push_back(iPoint(neighbors[i]));
+			}
+			i++;
+		}
+	}
 }

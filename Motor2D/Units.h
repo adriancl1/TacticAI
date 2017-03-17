@@ -2,6 +2,7 @@
 #define _UNITS
 
 #include "Entity.h"
+#include "j1Timer.h"
 
 
 #define XY_TILES_RELATION 2
@@ -78,8 +79,11 @@ private:
 	fPoint move_vector;
 	float angle;
 	std::list<iPoint> path_list;
+
+	//TACTIC
 	bool IA;
-	Unit* enemy = nullptr;
+	Unit* attackingEnemy = nullptr;
+	j1Timer attackingTimer;
 	
 
 public:
@@ -92,6 +96,7 @@ public:
 
 	int unit_radius;
 	int id;
+
 	STATE state;
 
 	void Update(); // defines order
@@ -107,8 +112,12 @@ public:
 	int GetPath(iPoint dest);
 	void PopFirstPath();
 	void AddPath(iPoint new_goal);
+
+	//TACTIC
+	//bool CheckSurroundings();
+	bool AttackUnit();
+	bool Hit(int amount);
 	bool CheckSurroundings();
-	bool AttackUnit(Unit* victim);
 };
 
 #endif
