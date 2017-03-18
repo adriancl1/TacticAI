@@ -84,7 +84,7 @@ private:
 
 	//TACTIC
 	bool IA;
-	Unit* attackingEnemy = nullptr;
+	Unit* enemy = nullptr;
 	j1Timer attackingTimer;
 	j1Timer logicTimer;
 	std::list<iPoint> frontier;
@@ -108,7 +108,7 @@ public:
 	void PostUpdate();
 
 	virtual void Move();
-	virtual void AI();
+	virtual void DoIA();
 	virtual void Draw();	
 
 	const DIRECTION GetDir() const;

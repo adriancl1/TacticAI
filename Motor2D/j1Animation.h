@@ -49,6 +49,7 @@ public:
 	void SetLoopState(bool state);
 	
 	bool Finished() const;
+	bool FinishedLoop() const;
 	void Reset();
 
 private:

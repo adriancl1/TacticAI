@@ -76,7 +76,7 @@ bool j1Animation::Awake(pugi::xml_node& config)
 				new_anim->SetDirection(direction_node);
 
 				std::string action = action_node.name();
-				if (!action.compare("disappear") || !action.compare("die"))
+				if (!action.compare("disappear"))
 				{
 					new_anim->speed = 100.0f;
 					new_anim->loop = false;
@@ -303,7 +303,12 @@ iPoint& Animation::GetCurrentPivotPoint()
 
 bool Animation::Finished() const
 {
-	return loop == false && loops > 0;
+	return (loop == false && loops > 0);
+}
+
+bool Animation::FinishedLoop() const
+{
+	return loops > 0;
 }
 
 void Animation::Reset()
