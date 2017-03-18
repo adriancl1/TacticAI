@@ -169,8 +169,6 @@ void Unit::PostUpdate()
 		{
 			App->entity_manager->DeleteUnit(this);
 		}
-		//delete this;
-		//App->entity_manager->DeleteUnit(this);
 	}
 }
 

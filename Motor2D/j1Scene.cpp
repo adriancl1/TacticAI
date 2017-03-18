@@ -47,8 +47,8 @@ bool j1Scene::Start()
 	debug_tex = App->tex->Load("maps/path2.png");
 
 	App->entity_manager->CreateUnit(TWOHANDEDSWORDMAN, fPoint(30, 170));
-	//App->entity_manager->CreateUnit(TWOHANDEDSWORDMANENEMY, fPoint(250, 400));
-	App->entity_manager->CreateUnit(TWOHANDEDSWORDMAN, fPoint(300, 360));
+	App->entity_manager->CreateUnit(TWOHANDEDSWORDMANENEMY, fPoint(250, 400));
+	/*App->entity_manager->CreateUnit(TWOHANDEDSWORDMAN, fPoint(300, 360));
 	App->entity_manager->CreateUnit(TWOHANDEDSWORDMAN, fPoint(400, 350));
 	App->entity_manager->CreateUnit(TWOHANDEDSWORDMAN, fPoint(450, 415));
 	App->entity_manager->CreateUnit(TWOHANDEDSWORDMAN, fPoint(280, 320));
@@ -60,7 +60,7 @@ bool j1Scene::Start()
 	App->entity_manager->CreateUnit(TWOHANDEDSWORDMAN, fPoint(460, 300));
 	App->entity_manager->CreateUnit(TWOHANDEDSWORDMAN, fPoint(490, 330));
 	App->entity_manager->CreateUnit(TWOHANDEDSWORDMAN, fPoint(520, 360));
-	App->entity_manager->CreateUnit(CAVALRYARCHER, fPoint(90, 170));
+	App->entity_manager->CreateUnit(CAVALRYARCHER, fPoint(90, 170));*/
 
 	//App->entity_manager->CreateUnit(TWOHANDEDSWORDMANENEMY, fPoint(60, 190));
 

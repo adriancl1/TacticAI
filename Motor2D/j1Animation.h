@@ -41,7 +41,7 @@ private:
 	float current_frame;
 	bool loop = true;
 	int loops = 0;
-	float speed = 10.0f;	//More speed equals slow down the animation
+	float speed;	//More speed equals slow down the animation
 	j1Timer	anim_timer;
 
 public:
