@@ -57,6 +57,7 @@ enum STATE
 {
 	NONE,
 	ATTACKING,
+	MOVING_TO_ATTACK,
 	VIGILANT,
 	MOVING, 
 	DEAD
@@ -122,6 +123,7 @@ public:
 	bool Hit(int amount);
 	bool CheckSurroundings();
 	bool debug = false;
+	bool SetFightingArea();
 };
 
 #endif
