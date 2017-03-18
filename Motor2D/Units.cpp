@@ -49,7 +49,21 @@ Unit::Unit(UNIT_TYPE u_type, fPoint pos, int id): Entity(UNIT, pos), unit_type(u
 		speed = 1.4;
 		rate_of_fire = 2;
 		range = 4;
-		unit_class = ARCHER;
+		unit_class = RANGED;
+		unit_radius = 12;
+		IA = false;
+		state = NONE;
+		break;
+
+	
+	case ARCHER:
+		SetHp(30);
+		attack = 8;
+		SetArmor(1);
+		speed = 0.9;
+		rate_of_fire = 2;
+		range = 4;
+		unit_class = RANGED;
 		unit_radius = 12;
 		IA = false;
 		state = NONE;
@@ -72,8 +86,6 @@ Unit::Unit(UNIT_TYPE u_type, fPoint pos, int id): Entity(UNIT, pos), unit_type(u
 		unit_class = NO_CLASS;
 		break;
 	}
-
-	//logicTimer.Start();
 }
 
 void Unit::Update()
@@ -142,13 +154,9 @@ void Unit::Update()
 
 		if (state == ATTACKING)
 		{
-			/*if (attackingEnemy != nullptr) {
+			if (attackingEnemy != nullptr) {
 				AttackUnit();
 			}
-			else
-			{
-
-			}*/
 		}
 	}
 
@@ -193,7 +201,7 @@ void Unit::Move()
 				if (state == MOVING_TO_ATTACK)
 				{
 					state = ATTACKING;
-					this->action_type = ATTACK;
+					this->action_type = IDLE;
 				}
 				else {
 					state = NONE;
@@ -209,9 +217,9 @@ void Unit::AI()
 	{
 		CheckSurroundings();
 	}
-	if (state != ATTACKING) 
+	if (state == ATTACKING) 
 	{
-
+		AttackUnit();
 	}
 	if (state == MOVING || state == MOVING_TO_ATTACK)
 	{
@@ -390,6 +398,12 @@ bool Unit::AttackUnit()
 			this->action_type = ATTACK;
 			ret = true;
 		}
+	}
+
+	else
+	{
+		state = NONE;
+		action_type = IDLE;
 	}
 	
 	return ret;

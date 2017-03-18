@@ -21,6 +21,7 @@ bool j1Animation::Start()
 	textures.push_back(Textures(App->tex->Load("animations/Twohandedswordman.png"), TWOHANDEDSWORDMAN));
 	textures.push_back(Textures(App->tex->Load("animations/SiegeRam.png"), SIEGERAM));
 	textures.push_back(Textures(App->tex->Load("animations/Twohandedswordmanenemy.png"), TWOHANDEDSWORDMANENEMY));
+	textures.push_back(Textures(App->tex->Load("animations/archer.png"), ARCHER));
 	
 	return true;
 }
@@ -326,6 +327,9 @@ void Animation::SetUnit(const pugi::xml_node node)
 
 	else if (strcmp(node.name(), "siegeram") == 0)
 		unit_type = SIEGERAM;
+
+	else if (strcmp(node.name(), "archer") == 0)
+		unit_type = ARCHER;
 
 	else
 	{
