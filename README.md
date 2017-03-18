@@ -19,7 +19,7 @@ The brute force way to do is to check manually all the tiles inside their radius
 For those of you who don't know or have forgotten what BFS is and how it works just read this link: 
 [BFS Algorithm article](http://www.redblobgames.com/pathfinding/a-star/introduction.html)        
 Depending on the radius of your unit you should get something like this:
-![BFS Img](https://github.com/adriancl1/TacticAI/blob/master/Pictures/BFS.jpg)
+![BFS](http://imgur.com/s01aNvs)
 
 Radius of 1, 2 and 3 from left to right.        
 You should check in each tile if there's a unit there, and stop calculating as you've already found the nearest enemy. 
@@ -35,7 +35,7 @@ If you want to implement a Quadtree, follow this research by a fellow classmate 
 ## We have identified an enemy... Now what?
 Now things get complicated... and kind of messy. As said before, there's endless ways to program AI, but we will follow a basich scheme for now.
 Let's use a diagram to illustrate a basic fight between melee/melee, melee/ranged, ranged/ranged. 
-![Diagram Img](https://github.com/adriancl1/TacticAI/blob/master/Pictures/AIDiagram.png)
+![Diagram](http://imgur.com/gxYSNcJ)
 
 As we can see, there are multiple checks along the way we need to make before we begin attacking. Let's do some pseudocode to help you get the idea:
 
