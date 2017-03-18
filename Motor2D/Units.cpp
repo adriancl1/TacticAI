@@ -58,7 +58,7 @@ Unit::Unit(UNIT_TYPE u_type, fPoint pos, int id): Entity(UNIT, pos), unit_type(u
 	
 	case ARCHER:
 		SetHp(30);
-		attack = 8;
+		attack = 2;
 		SetArmor(1);
 		speed = 0.9;
 		rate_of_fire = 2;
@@ -113,40 +113,14 @@ void Unit::Update()
 				this->action_type = IDLE;
 			}
 		}
-		else if (App->input->GetKey(SDL_SCANCODE_A) == KEY_DOWN && this->GetEntityStatus() == E_SELECTED)
-		{
-			App->input->GetMousePosition(destination.x, destination.y);
-			destination.x -= App->render->camera.x;
-			destination.y -= App->render->camera.y;
-			destination = App->map->WorldToMap(destination.x, destination.y);
-			if (App->entity_manager->IsUnitInTile(this, destination))
-			{
-				attackingEnemy = App->entity_manager->GetUnitInTile(destination);
-				state = ATTACKING;
-			}
 
-			else
-			{
-				destination = App->map->MapToWorld(destination.x, destination.y);
-				if (this->GetPath({ destination.x, destination.y }) != -1)
-				{
-					path_list.pop_front();
-					GetNextTile();
-					this->action_type = WALK;
-					state = MOVING;
-				}
-				else
-				{
-					state = NONE;
-					this->action_type = IDLE;
-				}
-			}
-		}
+
 		if (state == MOVING)
 		{
 			Move();
 			CheckSurroundings();
 		}
+
 		if (state == MOVING_TO_ATTACK)
 		{
 			Move();
@@ -170,7 +144,9 @@ void Unit::Update()
 		debug = !debug;
 	}
 
+	DrawDebugRadius();
 	Draw();
+
 }
 
 void Unit::PostUpdate()
@@ -343,6 +319,8 @@ bool Unit::AttackUnit()
 	bool ret = false;
 
 	if (attackingEnemy != nullptr && attackingEnemy->GetHP() > 0) {
+		
+		ret = true;
 
 		//Set the enemy to attack us too
 		if (attackingEnemy->attackingEnemy == nullptr)
@@ -353,55 +331,18 @@ bool Unit::AttackUnit()
 		iPoint enemyPos = App->map->WorldToMap(attackingEnemy->GetX(), attackingEnemy->GetY());
 		iPoint Pos = App->map->WorldToMap(GetX(), GetY());
 
-		SetFightingArea();
+		action_type = ATTACK;
+		LookAtEnemy();
 
-		if (Pos.x == enemyPos.x - range && Pos.y == enemyPos.y)//attackingEnemy is south
-		{
-			if (attackingTimer.ReadSec() > 1) {
-				attackingEnemy->SetHp(attackingEnemy->GetHP() - attack);
-				attackingTimer.Start();
-			}
-			this->direction = SOUTH;
-			this->action_type = ATTACK;
-			ret = true;
-		}
-
-		else if (Pos.x == enemyPos.x && Pos.y == enemyPos.y - range)//attackingEnemy is west
-		{
-			if (attackingTimer.ReadSec() > 1) {
-				attackingEnemy->SetHp(attackingEnemy->GetHP() - attack);
-				attackingTimer.Start();
-			}
-			this->direction = WEST;
-			this->action_type = ATTACK;
-			ret = true;
-		}
-
-		else if (Pos.x == enemyPos.x + range && Pos.y == enemyPos.y)//attackingEnemy is north
-		{
-			if (attackingTimer.ReadSec() > 1) {
-				attackingEnemy->SetHp(attackingEnemy->GetHP() - attack);
-				attackingTimer.Start();
-			}
-			this->direction = NORTH;
-			this->action_type = ATTACK;
-			ret = true;
-		}
-
-		else if (Pos.x == enemyPos.x && Pos.y == enemyPos.y + range)//attackingEnemy is east
-		{
-			if (attackingTimer.ReadSec() > 1) {
-				attackingEnemy->SetHp(attackingEnemy->GetHP() - attack);
-				attackingTimer.Start();
-			}
-			this->direction = EAST;
-			this->action_type = ATTACK;
-			ret = true;
+		if (attackingTimer.ReadSec() > 1) {
+			attackingEnemy->SetHp(attackingEnemy->GetHP() - attack);
+			attackingTimer.Start();
 		}
 	}
 
 	else
 	{
+		attackingEnemy = nullptr;
 		state = NONE;
 		action_type = IDLE;
 	}
@@ -448,7 +389,7 @@ bool Unit::CheckSurroundings()
 						if (unit2->IA != this->IA)
 						{
 							attackingEnemy = unit2;
-							AttackUnit();
+							SetFightingArea();
 							attackingTimer.Start();
 							return true;
 						}
@@ -483,7 +424,213 @@ bool Unit::CheckSurroundings()
 			}
 		}
 	}
+	return true;
+}
 
+bool Unit::SetFightingArea()
+{
+	if (state != MOVING_TO_ATTACK && state != ATTACKING)
+	{
+		state = MOVING_TO_ATTACK;
+		bool ret;
+		iPoint enemyPos = App->map->WorldToMap(attackingEnemy->GetX(), attackingEnemy->GetY());
+		iPoint Pos = App->map->WorldToMap(GetX(), GetY());
+
+		iPoint distance = Pos - enemyPos;
+
+
+		//UNIT
+		
+		if (unit_class == RANGED) 
+		{
+			state = ATTACKING; //If you're ranged, just attack
+		}
+
+		else{ //If you're not ranged, you'll have to calculate where to go to fight your enemy
+			if (attackingEnemy->attackingEnemy == nullptr) {
+				if (attackingEnemy->unit_class != RANGED) {//If the enemy is not ranged either, you'll both agree on where to meet
+					iPoint newPos;
+					newPos.x = Pos.x - distance.x*0.5;
+					newPos.y = Pos.y - distance.y*0.5;
+					this->path_list.clear();
+					if (this->GetPath(App->map->MapToWorld(newPos.x, newPos.y)) != -1)
+					{
+						path_list.pop_front();
+						GetNextTile();
+						this->action_type = WALK;
+						ret = false;
+					}
+					else
+					{
+						state = NONE;
+					}
+				}
+
+				else  //If the enemy is ranged you'll have to go to one of his adjacent tiles
+				{
+					iPoint newPos;
+					attackingEnemy->GetFreeAdjacent(newPos);
+					path_list.clear();
+					if (GetPath(App->map->MapToWorld(newPos.x, newPos.y)) != -1)
+					{
+						path_list.pop_front();
+						GetNextTile();
+						action_type = WALK;
+						ret = false;
+					}
+					else
+					{
+						state = NONE;
+					}
+				}
+			}
+
+			else //Enemy is already in combat with someone else 
+			{
+				iPoint newPos;
+				attackingEnemy->GetFreeAdjacent(newPos);
+				path_list.clear();
+				if (GetPath(App->map->MapToWorld(newPos.x, newPos.y)) != -1)
+				{
+					path_list.pop_front();
+					GetNextTile();
+					action_type = WALK;
+					ret = false;
+				}
+				else
+				{
+					state = NONE;
+				}
+			}
+		}
+
+		//ENEMY
+		if (attackingEnemy->attackingEnemy == nullptr) {
+
+			attackingEnemy->state = MOVING_TO_ATTACK;
+
+			if (attackingEnemy->unit_class == RANGED)
+			{
+				state == ATTACKING;
+			}
+
+			if (this->unit_class != RANGED) {//We'll just repeat what we did to our unit
+				iPoint newEnemyPos;
+				newEnemyPos.x = enemyPos.x + distance.x*0.5;
+				newEnemyPos.y = enemyPos.y + distance.y*0.5 - range;
+				attackingEnemy->path_list.clear();
+				if (attackingEnemy->GetPath(App->map->MapToWorld(newEnemyPos.x, newEnemyPos.y)) != -1)
+				{
+					attackingEnemy->path_list.pop_front();
+					attackingEnemy->GetNextTile();
+					attackingEnemy->action_type = WALK;
+					ret = false;
+				}
+				else
+				{
+					attackingEnemy->state = NONE;
+				}
+			}
+
+			else // If the enemy is ranged we'll repeat too
+			{
+				iPoint newEnemyPos;
+				this->GetFreeAdjacent(newEnemyPos);
+				attackingEnemy->path_list.clear();
+				if (attackingEnemy->GetPath(App->map->MapToWorld(newEnemyPos.x, newEnemyPos.y)) != -1)
+				{
+					attackingEnemy->path_list.pop_front();
+					attackingEnemy->GetNextTile();
+					attackingEnemy->action_type = WALK;
+					ret = false;
+				}
+				else
+				{
+					attackingEnemy->state = NONE;
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
+//Returns the direction to face the enemy 
+void Unit::LookAtEnemy()
+{
+	if (attackingEnemy != nullptr)
+	{
+
+		iPoint direction_vec;
+		direction_vec.x = attackingEnemy->GetX() - GetX();
+		direction_vec.y = GetY() - attackingEnemy->GetY();
+
+		angle = (float)RAD_TO_DEG * atan2(direction_vec.y, direction_vec.x);
+
+		if (angle < 0)
+			angle += 360;
+
+
+		if ((0 <= angle &&  angle <= 22.5) || (337.5 <= angle&& angle <= 360))
+			this->direction = EAST;
+
+		else if (22.5 <= angle &&  angle <= 67.5)
+			this->direction = NORTH_EAST;
+
+		else if (67.5 <= angle &&  angle <= 112.5)
+			this->direction = NORTH;
+
+		else if (112.5 <= angle &&  angle <= 157.5)
+			this->direction = NORTH_WEST;
+
+		else if (157.5 <= angle &&  angle <= 202.5)
+			this->direction = WEST;
+
+		else if (202.5 <= angle &&  angle <= 247.5)
+			this->direction = SOUTH_WEST;
+
+		else if (247.5 <= angle &&  angle <= 292.5)
+			this->direction = SOUTH;
+
+		else if (292.5 <= angle &&  angle <= 337.5)
+			this->direction = SOUTH_EAST;
+	}
+}
+
+bool Unit::GetFreeAdjacent(iPoint& Adjacent) const
+{
+	iPoint ret = App->map->WorldToMap(GetX(), GetY());
+
+	if (!App->entity_manager->IsUnitInTile(this, { ret.x + 1, ret.y }))
+	{
+		Adjacent = { ret.x + 1, ret.y };
+		return true;
+	}
+	else if (!App->entity_manager->IsUnitInTile(this, { ret.x - 1, ret.y }))
+	{
+		Adjacent = { ret.x - 1, ret.y };
+		return true;
+	}
+	else if (!App->entity_manager->IsUnitInTile(this, { ret.x, ret.y + 1}))
+	{
+		Adjacent = { ret.x, ret.y + 1};
+		return true;
+	}
+	else if (!App->entity_manager->IsUnitInTile(this, { ret.x, ret.y - 1}))
+	{
+		Adjacent = { ret.x, ret.y - 1};
+		return true;
+	}
+
+	else
+	{
+		return false;
+	}
+}
+
+void Unit::DrawDebugRadius()
+{
+	// Print DEBUG 
 	if (debug)
 	{
 		// Draw Visited
@@ -515,58 +662,4 @@ bool Unit::CheckSurroundings()
 			App->render->Blit(App->tex->debugTex, pos.x - 32, pos.y - 32, &r);
 		}
 	}
-
-
-	return true;
-}
-
-bool Unit::SetFightingArea()
-{
-	if (state != MOVING_TO_ATTACK && state != ATTACKING)
-	{
-		state = MOVING_TO_ATTACK;
-		attackingEnemy->state = MOVING_TO_ATTACK;
-
-		bool ret;
-		iPoint enemyPos = App->map->WorldToMap(attackingEnemy->GetX(), attackingEnemy->GetY());
-		iPoint Pos = App->map->WorldToMap(GetX(), GetY());
-
-		iPoint distance = Pos - enemyPos;
-
-		//UNIT
-		iPoint newPos;
-		newPos.x = Pos.x - distance.x*0.5;
-		newPos.y = Pos.y - distance.y*0.5;
-		this->path_list.clear();
-		if (this->GetPath(App->map->MapToWorld(newPos.x, newPos.y)) != -1)
-		{
-			path_list.pop_front();
-			GetNextTile();
-			this->action_type = WALK;
-			ret = false;
-		}
-		else
-		{
-			state = NONE;
-		}
-
-		//ENEMY
-		iPoint newEnemyPos;
-		newEnemyPos.x = enemyPos.x + distance.x*0.5;
-		newEnemyPos.y = enemyPos.y + distance.y*0.5 - range;
-		attackingEnemy->path_list.clear();
-		if (attackingEnemy->GetPath(App->map->MapToWorld(newEnemyPos.x, newEnemyPos.y)) != -1)
-		{
-			attackingEnemy->path_list.pop_front();
-			attackingEnemy->GetNextTile();
-			attackingEnemy->action_type = WALK;
-			ret = false;
-		}
-		else
-		{
-			attackingEnemy->state = NONE;
-		}
-	}
-
-	return true;
 }

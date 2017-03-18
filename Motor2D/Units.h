@@ -125,6 +125,9 @@ public:
 	bool CheckSurroundings();
 	bool debug = false;
 	bool SetFightingArea();
+	void LookAtEnemy();
+	bool GetFreeAdjacent(iPoint& Adjacent) const;
+	void DrawDebugRadius();
 };
 
 #endif
