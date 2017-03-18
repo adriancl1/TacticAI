@@ -16,9 +16,10 @@ For this research I'd recommend that they have at least a radius (how far can th
 ## Identifying enemies - Brute Force Way
 So now that you've got your units, the first step would be to check if there are any enemies around them. 
 The brute force way to do is to check manually all the tiles inside their radius, starting from their position and going out. For this reason, we'll use the BFS algorithm with some tweaks as it serves the purpose just right.        
-For those of you who don't know or have forgotten what BFS is and how it works just read this link: http://www.redblobgames.com/pathfinding/a-star/introduction.html        
+For those of you who don't know or have forgotten what BFS is and how it works just read this link: 
+[BFS Algorithm article](http://www.redblobgames.com/pathfinding/a-star/introduction.html)        
 Depending on the radius of your unit you should get something like this:
-![BFS](https://github.com/adriancl1/TacticAI/blob/master/Pictures/BFS.jpg)
+![BFS Img](https://github.com/adriancl1/TacticAI/blob/master/Pictures/BFS.jpg)
 
 Radius of 1, 2 and 3 from left to right.        
 You should check in each tile if there's a unit there, and stop calculating as you've already found the nearest enemy. 
@@ -27,13 +28,14 @@ However, this way to do it is very expensive resource-wise, and you'll have prob
 ## Identifying enemies - The Right Way
 If you want to get better results, you should introduce a Quadtree system to your code.
 Given the radius of your unit, you could find how many nodes are inside it and just look for the nearest enemy in said nodes (if there's any enemy). This will speed things tremendously, as you'll just check for enemies in nodes instead of check every tile in a radius.        
-If you want to implement a Quadtree, follow this research by a fellow classmate (Xavier Olivenza):      
-https://xavierolivenza.github.io/Quadtree_Point_Search_Implementation/
+If you want to implement a Quadtree, follow this research by a fellow classmate (Xavier Olivenza):
+[Quadtree Research](https://xavierolivenza.github.io/Quadtree_Point_Search_Implementation/)
+
 
 ## We have identified an enemy... Now what?
 Now things get complicated... and kind of messy. As said before, there's endless ways to program AI, but we will follow a basich scheme for now.
 Let's use a diagram to illustrate a basic fight between melee/melee, melee/ranged, ranged/ranged. 
-![Diagram](https://github.com/adriancl1/TacticAI/blob/master/Pictures/AIDiagram.png)
+![Diagram Img](https://github.com/adriancl1/TacticAI/blob/master/Pictures/AIDiagram.png)
 
 As we can see, there are multiple checks along the way we need to make before we begin attacking. Let's do some pseudocode to help you get the idea:
 
