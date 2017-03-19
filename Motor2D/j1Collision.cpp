@@ -21,7 +21,7 @@ bool j1Collision::Update(float dt)
 		iPoint pos = App->map->WorldToMap(unit1._Ptr->_Myval->GetX(), unit1._Ptr->_Myval->GetY());
 		Unit* unit_1 = (Unit*)unit1._Ptr->_Myval;
 		//this shouldn't happen, but if any case:
-		if (!App->pathfinding->IsWalkable(pos) && unit_1->state != MOVING)
+		if (!App->pathfinding->IsWalkable(pos) && unit_1->state != MOVING && unit_1->state != MOVING_TO_ATTACK)
 		{
 			iPoint tile = FindClosestWalkable((Unit*)unit1._Ptr->_Myval);
 			unit1._Ptr->_Myval->SetPosition(tile.x, tile.y);
@@ -37,7 +37,7 @@ bool j1Collision::Update(float dt)
 					{
 						//Collision detected
 						Unit* unit_2 = (Unit*)unit2._Ptr->_Myval;
-						if (unit_1->id > unit_2->id && unit_1->state != MOVING)
+						if (unit_1->id > unit_2->id && unit_1->state != MOVING && unit_1->state != MOVING_TO_ATTACK)
 						{
 							SplitUnits((Unit*)unit1._Ptr->_Myval, (Unit*)unit2._Ptr->_Myval);
 						}
@@ -147,5 +147,7 @@ void j1Collision::SplitUnits(Unit * unit1, Unit * unit2)
 	unit1->GetNextTile();
 	unit1->SetAction(WALK);
 	unit1->state = MOVING;
+	unit1->state = MOVING_TO_ATTACK;
+
 }
 

@@ -68,6 +68,7 @@ bool j1Map::CreateWalkabilityMap(int& width, int & height, uchar** buffer) {
 	return ret;
 
 }
+
 void j1Map::Draw()
 {
 	if (map_loaded == false)

@@ -83,7 +83,7 @@ private:
 	std::list<iPoint> path_list;
 
 	//TACTIC
-	bool IA;
+	bool AI;
 	Unit* enemy = nullptr;
 	j1Timer attackingTimer;
 	j1Timer logicTimer;
@@ -108,7 +108,7 @@ public:
 	void PostUpdate();
 
 	virtual void Move();
-	virtual void DoIA();
+	virtual void DoAI();
 	virtual void Draw();	
 
 	const DIRECTION GetDir() const;
@@ -121,13 +121,14 @@ public:
 
 	//TACTIC
 	bool AttackUnit();
-	bool Hit(int amount);
 	bool CheckSurroundings();
 	bool debug = false;
 	bool SetFightingArea();
 	void LookAtEnemy();
 	bool GetFreeAdjacent(iPoint& Adjacent) const;
+	bool GetAdjacentTile(iPoint tile, iPoint& Adjacent) const;
 	void DrawDebugRadius();
+
 };
 
 #endif
