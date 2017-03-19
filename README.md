@@ -65,3 +65,8 @@ This part's easy. You just gotta make sure that your enemy is still actually ali
 
 ## You're done!
 When one of the units dies, the other one goes back to an IDLE state and starts searching again in his surroundings for other possible enemies. However, if for example it was a guard who defends an entrance, you could save his original position and just make him come back after defeating an enemy by generating a path to it. You may do as you wish with your AI.
+
+## Interesting Links
+[Game AI: The State of the Industry](http://www.gamasutra.com/view/feature/3570/game_ai_the_state_of_the_industry.php)       
+[Game AI: The State of the Industry Part II](http://www.gamasutra.com/view/feature/131974/game_ai_the_state_of_the_.php)          
+[Good examples of modern AI](http://www.gamasutra.com/view/news/269634/7_examples_of_game_AI_that_every_developer_should_study.php)
