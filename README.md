@@ -1,9 +1,9 @@
 # Tactic AI
 
 ## What's Tactic AI?
-Tactic AI stands for Tactica Artificial Intelligence, but what does that mean? 
-In RTS games like Age of Empires II, the way the enemy units act and react to our own troop is handled by tactic AI. 
-On the other hand we have strategic AI, which would kind of represent the "enemy player", as it has control over enemy resources and such. 
+Tactic AI stands for Tactical Artificial Intelligence, but what does that mean? 
+In RTS games like Age of Empires II, the way the enemy units act and react to our own troop is handled by tactic AI, but also how our own units do such things. 
+On the other hand we have strategic AI, which would kind of represent the "enemy player", as it has control over enemy resources and other more player-oriented and controlled elements. 
 The tactic AI in games defines -for example- which path will a enemy follow to get to you, taking into account your weapon, his weapon, and many other variables. You can probably see that almost every game with some kind of enemy has tactic AI .
 With that in mind, there's endless ways to program our AI, and nowadays it's mostly done through scripting, pre-generated paths... However, in here we will do it the old-fashioned way.
 
@@ -25,9 +25,15 @@ Radius of 1, 2 and 3 from left to right.
 You should check in each tile if there's a unit there, and stop calculating as you've already found the nearest enemy. 
 However, this way to do it is very expensive resource-wise, and you'll have problems when many unis are deployed on the field. For now, just limit the time the calculations are done, for example, to 1 each second.
 
+Your units should look something like this in debug mode:
+
+![BFSUnit](https://github.com/adriancl1/TacticAI/blob/master/Pictures/UnitsBFS.gif?raw=true)  
+
 ## Identifying enemies - The Right Way
 If you want to get better results, you should introduce a Quadtree system to your code.
-Given the radius of your unit, you could find how many nodes are inside it and just look for the nearest enemy in said nodes (if there's any enemy). This will speed things tremendously, as you'll just check for enemies in nodes instead of check every tile in a radius.        
+Given the radius of your unit, you could find how many nodes are inside it and just look for the nearest enemy in said nodes (if there's any enemy). This will speed things tremendously, as you'll just check for enemies in nodes instead of check every tile in a radius. It would look a bit like this:         
+![Quadtree](https://github.com/adriancl1/TacticAI/blob/master/Pictures/QuadtreeSearch.PNG?raw=true)       
+
 If you want to implement a Quadtree, follow this research by a fellow classmate (Xavier Olivenza):       
 [Quadtree Research](https://xavierolivenza.github.io/Quadtree_Point_Search_Implementation/)
 
@@ -43,25 +49,45 @@ Things we should have:
 * Pointer to the enemy unit
 * STATE for the unit class
 
-If we're ranged     
+If the enemy's not attacking anybody else    
 {    
-STATE=ATTACKING     
+If we're both ranged        
+{        
+Set both STATEs to ATTACKING       
+}        
+Else if I'm ranged and he's melee       
+{    
+Set my STATE to ATTACKING, create a path for the enemy with one of my adjacent tiles as destination       
+}      
+Else if I'm melee and he's ranged       
+{       
+Same as before, just switch the units      
+}       
+Else if we're both melee       
+{        
+Find a tile in between our positions, and a free tile next to it. This unit will go to the first one, and the enemy to the other one     
 }         
-Else       
+}      
+Else if the enemy is attacking someone else       
 {          
- If the enemy is ranged or the enemy is already attacking another unit       
- {      
- Get a free adjacent tile to the enemy and generate a path to it      
- STATE=MOVING_TO_ATTACK      
- }    
- Else{      
- Find 2 tiles halfway between the units and generate a path to it (to your unit and to the enemy)      
- STATE=MOVING_TO_ATTACK      
- }    
+ if his STATE==ATTACKING       
+ {       
+ move next to him and attack       
+ }        
+ else if his state is MOVING_TO_ATTACK       
+ {        
+ Get his destination and move to a tile next to it        
+ }       
+ }       
 It should be noted that we use MOVING_TO_ATTACK so when our Move() function ends (we get to our destination), the unit changes its STATE to ATTACKING instead of just IDLE or NONE.
 
+Here's how it should look like for an archer against a swordman and two swordmans against each other.
+
+![MeleevsMelee](https://github.com/adriancl1/TacticAI/blob/master/Pictures/MeleevsMelee.gif?raw=true)
+![RangedvsMelee](https://github.com/adriancl1/TacticAI/blob/master/Pictures/RangevsMelee.gif?raw=true)
+
 ## Attacking
-This part's easy. You just gotta make sure that your enemy is still actually alive (his HP is above 0 and he's not a nullptr), and then use a timer to control how mucha damage you do per second (dps). You could also apply damage at any other rate if you wish, just use a timer (although less interval of time between damage calculations means it'll be more resource intensive if there are several units fighting all the time)!
+This part's easier. You just gotta make sure that your enemy is still actually alive (his HP is above 0 and he's not a nullptr), that he's still within your range, and then use a timer to control how much damage you do per second (dps). You could also apply damage at any other rate if you wish, just use a timer (although less interval of time between damage calculations means it'll be more resource intensive if there are several units fighting all the time)!
 
 ## You're done!
 When one of the units dies, the other one goes back to an IDLE state and starts searching again in his surroundings for other possible enemies. However, if for example it was a guard who defends an entrance, you could save his original position and just make him come back after defeating an enemy by generating a path to it. You may do as you wish with your AI.
